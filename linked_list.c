@@ -65,7 +65,7 @@ int Delete(int value, struct Node** head){
         pred =  curr;
         curr = curr->next;
     }
-    if(curr != NULL || curr->data > value){
+    if(curr != NULL || curr->data == value){
         if(pred==NULL){
             *head = curr->next;
             free(curr);
