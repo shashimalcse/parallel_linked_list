@@ -1,6 +1,8 @@
 #include<stdio.h> // define the header file  
 #include<stdlib.h>
 #include<pthread.h>
+#include <math.h>
+
 
 struct Node {
     int data;
@@ -86,6 +88,27 @@ int Delete(int value, struct Node** head){
 struct Node* head = NULL;
 int main()
 {
+    int lower = 1, count = 10;
+    int upper = pow(2,16);
+    int data[count];
+
+    srand(time(0));
+
+    printf("The random numbers are: ");
+    for (int i = 0; i < count; i++) {
+        int num = (rand() % (upper - lower + 1)) + lower;
+        data[i] = num;
+        for ( int j = 0; j <= i-1; j++ ) {
+            if ( data[j] == data[i] )
+            i--;
+            }
+    }
+
+    for (int i = 0; i < count; i++) {
+        printf("%d \n",data[i]);
+    }
+
+    return 0;
     
     Insert(1,&head);
     Insert(2,&head);
