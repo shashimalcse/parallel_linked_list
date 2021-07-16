@@ -65,7 +65,7 @@ int Delete(int value, struct Node** head){
         pred =  curr;
         curr = curr->next;
     }
-    if(curr == NULL || curr->data > value){
+    if(curr != NULL || curr->data > value){
         if(pred==NULL){
             *head = curr->next;
             free(curr);
@@ -89,8 +89,7 @@ int main()
     
     Insert(1,&head);
     Insert(2,&head);
-    Insert(3,&head);
-
+    Delete(2,&head);
     printList(head);
  
     return 0;
