@@ -29,8 +29,8 @@ int Member(int value, struct Node* head){
     }
 }
 
-int Insert(int value, struct Node* head){
-    struct Node* curr = head;
+int Insert(int value, struct Node** head){
+    struct Node* curr = *head;
     struct Node* pred = NULL;
     struct Node* temp;
 
@@ -43,7 +43,7 @@ int Insert(int value, struct Node* head){
         temp->data =  value;
         temp->next = curr;
         if(pred==NULL){
-            head = temp;
+            *head = temp;
         }
         else{
             pred->next = temp;
@@ -57,6 +57,31 @@ int Insert(int value, struct Node* head){
 
 }
 
+int Delete(int value, struct Node** head){
+    struct Node* curr = *head;
+    struct Node* pred = NULL;
+
+    while (curr != NULL && curr->data < value){
+        pred =  curr;
+        curr = curr->next;
+    }
+    if(curr == NULL || curr->data > value){
+        if(pred==NULL){
+            *head = curr->next;
+            free(curr);
+        }
+        else{
+            pred->next = curr->next;
+            free(curr);
+        }
+        return 1;
+    }
+    else{
+        return 0;
+    }
+
+
+}
 
 
 int main()
