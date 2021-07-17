@@ -115,7 +115,34 @@ int RandomGenerator(int *data,int count){
     return 0;
 }
 
+void *Thread(void* rank){
+    while(count<m){
+        if(count_m < sizeof(m_member)){
+            pthread_mutex_lock( &mutex1 );    
+            Member(opr_data[count],head);
+            count_m++;
+            pthread_mutex_unlock( &mutex1 ); 
 
+        }
+        else if(count_i < sizeof(m_insert) + sizeof(m_member)){
+            pthread_mutex_lock( &mutex1 ); 
+            Insert(opr_data[count],&head);
+            count_i++;
+            pthread_mutex_unlock( &mutex1 ); 
+        }
+        else{
+            pthread_mutex_lock( &mutex1 ); 
+            Delete(opr_data[count],&head);
+            count_d++;
+            pthread_mutex_unlock( &mutex1 ); 
+        }
+        pthread_mutex_lock( &mutex2 ); 
+        count++;
+        pthread_mutex_unlock( &mutex2 ); 
+    }
+    return NULL;
+
+}
 
 
 int main(int argc, char* argv[])
@@ -159,27 +186,21 @@ int main(int argc, char* argv[])
 
     thread_handles =  malloc(thread_count*sizeof(pthread_t));
     i = 0;
-
+    pthread_mutex_init(&mutex1, NULL);
+	pthread_mutex_init(&mutex2, NULL);
     printf("debug5 \n");
 
     start_time = clock();
     
     printf("debug6 \n");
     
-    while(i<m){
-        if(count_m < sizeof(m_member)){
-            Member(opr_data[i],head);
-            count_m++;
-        }
-        else if(count_i < sizeof(m_insert) + sizeof(m_member)){
-            Insert(opr_data[i],&head);
-            count_i++;
-        }
-        else{
-            Delete(opr_data[i],&head);
-            count_d++;
-        }
-        i++;
+    for (thread = 0; thread < thread_count; thread++)
+    {
+    pthread_create(&thread_handles[thread], NULL, Thread, (void*) thread);
+    }
+    for (thread = 0; thread < thread_count; thread++)
+    {
+    pthread_join(thread_handles[thread], NULL);
     }
     printf("debug7 \n");
     
@@ -188,6 +209,8 @@ int main(int argc, char* argv[])
     diff_time = ((double) (end_time-start_time))/ CLOCKS_PER_SEC;
 
     printf("%f",diff_time);
+    free(thread_handles);
+
 
     return 0;
 }
