@@ -15,20 +15,10 @@ struct Node* head = NULL;
 int n;
 int m;
 float member_fraction, insert_fraction, delete_fraction;
-pthread_mutex_t mutex1,mutex2;
-int count, count_m, count_i, count_d;
+pthread_mutex_t mutex1;
+int count_m, count_i, count_d;
 float m_member, m_insert, m_delete;
 int thread_count = 0;
-int* opr_data; 
-int* link_data; 
-
-void printList(struct Node* n)
-{
-    while (n != NULL) {
-        printf(" %d ", n->data);
-        n = n->next;
-    }
-}
 
 int Member(int value, struct Node* head){
     struct Node* curr = head;
@@ -98,47 +88,31 @@ int Delete(int value, struct Node** head){
 
 }
 
-int RandomGenerator(int *data,int count){
-    int lower = 1;
-    int upper = pow(2,16);
-    for (int i = 0; i < count; i++) {
-        int num = (rand() % (upper - lower + 1)) + lower;
-        data[i] = num;
-        for ( int j = 0; j <= i-1; j++ ) {
-            if ( data[j] == data[i] )
-            i--;
-            }
-    }
-
-
-
-    return 0;
-}
-
 void *Thread(void* rank){
+
+    int count = 0;
     while(count<m){
-        if(count_m < sizeof(m_member)){
+        int random_value = rand() % 65535;
+        if(count_m < m_member){
             pthread_mutex_lock( &mutex1 );    
-            Member(opr_data[count],head);
+            Member(random_value,head);
             count_m++;
             pthread_mutex_unlock( &mutex1 ); 
 
         }
-        else if(count_i < sizeof(m_insert) + sizeof(m_member)){
+        else if(count_i < m_insert){
             pthread_mutex_lock( &mutex1 ); 
-            Insert(opr_data[count],&head);
+            Insert(random_value,&head);
             count_i++;
             pthread_mutex_unlock( &mutex1 ); 
         }
         else{
             pthread_mutex_lock( &mutex1 ); 
-            Delete(opr_data[count],&head);
+            Delete(random_value,&head);
             count_d++;
             pthread_mutex_unlock( &mutex1 ); 
         }
-        pthread_mutex_lock( &mutex2 ); 
-        count++;
-        pthread_mutex_unlock( &mutex2 ); 
+        count = count_m+count_i+count_d;
     }
     return NULL;
 
@@ -150,7 +124,6 @@ int main(int argc, char* argv[])
     int lower = 1;
     int upper = pow(2,16);
     long thread;
-    int i;
     clock_t start_time, end_time;
     double diff_time;
     pthread_t* thread_handles;
@@ -163,36 +136,21 @@ int main(int argc, char* argv[])
     insert_fraction = (float) atof(argv[5]);
     delete_fraction = (float) atof(argv[6]);
 
-    printf("debug1 \n");
-
-    opr_data =  malloc(m*sizeof(int));
-    link_data = malloc(n*sizeof(int));
     m_member = m * member_fraction;
     m_insert = m * insert_fraction;
     m_delete = m * delete_fraction;
 
-    printf("debug2 \n");
-
-    RandomGenerator(opr_data,m);
-    RandomGenerator(link_data,n);
-
-    printf("debug3 \n");
-
-    for (int i = 0; i < n; i++) {
-        Insert(link_data[i],&head);
+    int i = 0;
+    while (i < n) {
+        if (Insert(rand() % 65535, &head) == 1)
+            i++;
     } 
 
-    printf("debug4 \n");
 
     thread_handles =  malloc(thread_count*sizeof(pthread_t));
-    i = 0;
     pthread_mutex_init(&mutex1, NULL);
-	pthread_mutex_init(&mutex2, NULL);
-    printf("debug5 \n");
 
     start_time = clock();
-    
-    printf("debug6 \n");
     
     for (thread = 0; thread < thread_count; thread++)
     {
@@ -202,10 +160,10 @@ int main(int argc, char* argv[])
     {
     pthread_join(thread_handles[thread], NULL);
     }
-    printf("debug7 \n");
     
     end_time =  clock();
 
+    pthread_mutex_destroy(&mutex1);
     diff_time = ((double) (end_time-start_time))/ CLOCKS_PER_SEC;
 
     printf("%f",diff_time);
