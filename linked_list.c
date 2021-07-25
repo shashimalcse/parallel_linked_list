@@ -105,6 +105,7 @@ int main(int argc, char* argv[])
     m_insert = m * insert_fraction;
     m_delete = m * delete_fraction;
 
+    printf("%f %f %f \n", m_member, m_insert, m_delete);
 
     int i = 0;
     while (i < n) {
