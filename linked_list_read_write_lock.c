@@ -3,6 +3,7 @@
 #include <pthread.h>
 #include <math.h>
 #include <time.h>
+#include <sys/time.h>
 
 struct Node
 {
@@ -15,8 +16,8 @@ int n;
 int m;
 float member_fraction, insert_fraction, delete_fraction;
 pthread_rwlock_t rwlock;
-int count_m, count_i, count_d;
-float m_member, m_insert, m_delete;
+pthread_mutex_t mutex1;
+int m_member = 0, m_insert = 0, m_delete = 0;
 int thread_count = 0;
 
 int Member(int value, struct Node *head)
@@ -101,44 +102,99 @@ int Delete(int value, struct Node **head)
 
 void *Thread(void *rank)
 {
+    int id = (long) rank;
+
+    int thread_m_member = 0;
+    int thread_m_insert = 0;
+    int thread_m_delete = 0;
+    int thread_m = 0;
+    if (m_member % thread_count == 0 || m_member % thread_count <= id) {
+        thread_m_member = m_member / thread_count;
+    }
+    else if (m_member % thread_count > id) {
+        thread_m_member = m_member / thread_count + 1;
+    }
+    if (m_insert % thread_count == 0 || m_insert % thread_count <= id) {
+        thread_m_insert = m_insert / thread_count;
+    }
+    else if (m_insert % thread_count > id) {
+        thread_m_insert = m_insert / thread_count + 1;
+    }
+    if (m_delete % thread_count == 0 || m_delete % thread_count <= id) {
+        thread_m_delete = m_delete / thread_count;
+    }
+    else if (m_delete % thread_count > id) {
+        thread_m_delete = m_delete / thread_count + 1;
+    }
+
+    thread_m = thread_m_delete + thread_m_insert + thread_m_member;
 
     int count = 0;
-    while (count < m)
-    {
+    int count_m=0; 
+    int count_i=0;
+    int count_d=0;
+
+    int member_is_finished = 0;
+    int insert_is_finished = 0;
+    int delete_is_finished = 0;
+
+    int i = 0;
+    while(count<thread_m){
         int random_value = rand() % 65535;
-        if (count_m < m_member)
-        {
-            /* Read lock */
-            pthread_rwlock_rdlock(&rwlock);
-            Member(random_value, head);
-            count_m++;
-            pthread_rwlock_unlock(&rwlock);
+        int random_ops =  rand() % 3;
+        if(random_ops == 0 && member_is_finished == 0){
+            
+            if(count_m < thread_m_member){
+                pthread_rwlock_rdlock( &rwlock );
+                Member(random_value,head);
+                pthread_rwlock_unlock( &rwlock ); 
+                count_m++;
+            }
+            else{
+                member_is_finished = 1;
+            }    
+            
         }
-        else if (count_i < m_insert)
-        {
-            /* Write lock */
-            pthread_rwlock_wrlock(&rwlock);
-            Insert(random_value, &head);
-            count_i++;
-            pthread_rwlock_unlock(&rwlock);
+        else if(random_ops == 1 && insert_is_finished == 0){
+            
+            if(count_i < thread_m_insert){
+                pthread_rwlock_wrlock( &rwlock );
+                Insert(random_value,&head);
+                pthread_rwlock_unlock( &rwlock ); 
+                count_i++;
+            }
+            else{
+                insert_is_finished = 1;
+            }    
+            
         }
-        else
-        {
-            /* Write lock */
-            pthread_rwlock_wrlock(&rwlock);
-            Delete(random_value, &head);
-            count_d++;
-            pthread_rwlock_unlock(&rwlock);
+        else if(random_ops == 2 && delete_is_finished == 0){
+            
+            if(count_d < thread_m_delete){
+                pthread_rwlock_wrlock( &rwlock );
+                Delete(random_value,&head);
+                pthread_rwlock_unlock( &rwlock ); 
+                count_d++;
+            }
+            else{
+                delete_is_finished = 1;
+            }    
+            
         }
         count = count_m + count_i + count_d;
+        i++;
+        
     }
-    return NULL;
+	return NULL;
+}
+
+double GetTimeDiff(struct timeval time_begin, struct timeval time_end) {
+    return (double) (time_end.tv_usec - time_begin.tv_usec) / 1000000 + (double) (time_end.tv_sec - time_begin.tv_sec);
 }
 
 int main(int argc, char* argv[]){
-
     long thread;
-    clock_t start_time, end_time;
+    struct timeval start_time, end_time;
     double diff_time;
     pthread_t *thread_handles;
 
@@ -164,24 +220,20 @@ int main(int argc, char* argv[]){
     thread_handles = malloc(thread_count * sizeof(pthread_t));
     pthread_rwlock_init(&rwlock, NULL);
 
-    start_time = clock();
-
+    gettimeofday(&start_time, NULL);
+    
     for (thread = 0; thread < thread_count; thread++)
     {
-        pthread_create(&thread_handles[thread], NULL, Thread, (void *)thread);
+        pthread_create(&thread_handles[thread], NULL, Thread, (void*) thread);
     }
     for (thread = 0; thread < thread_count; thread++)
     {
         pthread_join(thread_handles[thread], NULL);
     }
 
-    end_time = clock();
-
+    gettimeofday(&end_time, NULL);
     pthread_rwlock_destroy(&rwlock);
-    diff_time = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
-
-    printf("%f", diff_time);
+    printf("%f", GetTimeDiff(start_time, end_time));
     free(thread_handles);
-
     return 0;
 }
