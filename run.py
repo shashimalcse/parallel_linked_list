@@ -1,3 +1,13 @@
+"""
+handler code for the program.
+Following parameters are used in the test cases,which
+Case 1 - n = 1,000 and m = 10,000, mMember = 0.99, mIndert = 0.005, mDelete = 0.005
+Case 2 - n = 1,000 and m = 10,000, mMember = 0.90, mIndert = 0.05, mDelete = 0.05
+Case 3 - n = 1,000 and m = 10,000, mMember = 0.50, mIndert = 0.25, mDelete = 0.25
+
+For more details check the README.md
+"""
+
 from subprocess import call, Popen, PIPE
 import subprocess
 import statistics
