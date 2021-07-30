@@ -1,5 +1,12 @@
-./linked_list 1000 10000 0.99 0.005 0.005
-./linked_list_mutex 1 1000 10000 0.99 0.005 0.005
-./linked_list_read_write_lock 1 1000 10000 0.99 0.005 0.005
-gcc -g -Wall rw_linked_list.c -o rw_linked_list -pthread
+Compile the code
+----------------
+gcc -g -Wall file_name.c -o file_name -pthread
+
+Run the code
+------------
+./linked_list <n> <m> <m_member> <m_insert> <m_delete>
+./linked_list_mutex <thread_count> <n> <m> <m_member> <m_insert> <m_delete>
+./linked_list_read_write_lock <n> <m> <m_member> <m_insert> <m_delete>
+
+
 
