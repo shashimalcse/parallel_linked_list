@@ -181,11 +181,6 @@ void *Thread(void *rank)
             }    
             
         }
-        
-        pthread_mutex_lock(&mutex);
-        count_m += local_member;
-        count_i += local_insert;
-        count_d += local_delete;
         count = count_m + count_i + count_d;
         i++;
         
@@ -224,7 +219,6 @@ int main(int argc, char* argv[]){
 
     thread_handles = malloc(thread_count * sizeof(pthread_t));
     pthread_rwlock_init(&rwlock, NULL);
-    pthread_mutex_init(&mutex, NULL);
 
     gettimeofday(&start_time, NULL);
     
