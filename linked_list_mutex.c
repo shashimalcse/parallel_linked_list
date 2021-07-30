@@ -152,19 +152,21 @@ int main(int argc, char* argv[])
 
     start_time = clock();
     
-    for (thread = 0; thread < thread_count; thread++)
-    {
-    pthread_create(&thread_handles[thread], NULL, Thread, (void*) thread);
+    for (int i=0; i<100; i++){
+      for (thread = 0; thread < thread_count; thread++)
+      {
+      pthread_create(&thread_handles[thread], NULL, Thread, (void*) thread);
+      }
+      for (thread = 0; thread < thread_count; thread++)
+      {
+      pthread_join(thread_handles[thread], NULL);
+      }
     }
-    for (thread = 0; thread < thread_count; thread++)
-    {
-    pthread_join(thread_handles[thread], NULL);
-    }
-    
     end_time =  clock();
 
     pthread_mutex_destroy(&mutex1);
     diff_time = ((double) (end_time-start_time))/ CLOCKS_PER_SEC;
+    diff_time = diff_time / 100;
 
     printf("%f",diff_time);
     free(thread_handles);

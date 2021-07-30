@@ -115,7 +115,6 @@ int main(int argc, char* argv[])
 
     start_time = clock();
     
-    
     while(count<m){
         int random_value = rand() % 65535;
         if(count_m < m_member){
@@ -132,7 +131,7 @@ int main(int argc, char* argv[])
         }
         count =  count_m+count_i+count_d;
     }
-    
+
     end_time =  clock();
 
     diff_time = ((double) (end_time-start_time))/ CLOCKS_PER_SEC;

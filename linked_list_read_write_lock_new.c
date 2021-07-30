@@ -15,9 +15,8 @@ int n;
 int m;
 float member_fraction, insert_fraction, delete_fraction;
 pthread_rwlock_t rwlock;
-pthread_mutex_t mutex;
-int count_m, count_i, count_d;
-float m_member, m_insert, m_delete;
+pthread_mutex_t mutex1;
+int m_member = 0, m_insert = 0, m_delete = 0;
 int thread_count = 0;
 
 int Member(int value, struct Node *head)
@@ -102,55 +101,93 @@ int Delete(int value, struct Node **head)
 
 void *Thread(void *rank)
 {
+    int id = (long) rank;
+
+    int thread_m_member = 0;
+    int thread_m_insert = 0;
+    int thread_m_delete = 0;
+    int thread_m = 0;
+    if (m_member % thread_count == 0 || m_member % thread_count <= id) {
+        thread_m_member = m_member / thread_count;
+    }
+    else if (m_member % thread_count > id) {
+        thread_m_member = m_member / thread_count + 1;
+    }
+    if (m_insert % thread_count == 0 || m_insert % thread_count <= id) {
+        thread_m_insert = m_insert / thread_count;
+    }
+    else if (m_insert % thread_count > id) {
+        thread_m_insert = m_insert / thread_count + 1;
+    }
+    if (m_delete % thread_count == 0 || m_delete % thread_count <= id) {
+        thread_m_delete = m_delete / thread_count;
+    }
+    else if (m_delete % thread_count > id) {
+        thread_m_delete = m_delete / thread_count + 1;
+    }
+
+    thread_m = thread_m_delete + thread_m_insert + thread_m_member;
 
     int count = 0;
+    int count_m=0; 
+    int count_i=0;
+    int count_d=0;
 
-    int local_member = 0;
-    int local_insert = 0;
-    int local_delete = 0;   
+    int member_is_finished = 0;
+    int insert_is_finished = 0;
+    int delete_is_finished = 0;
 
-    int ops_per_thread = m/thread_count;
-
-    while (count < ops_per_thread)
-    {
-        int random_value = rand() % 65535;
-        if (local_member < m_member)
-        {
-            /* Read lock */
-            pthread_rwlock_rdlock(&rwlock);
-            Member(random_value, head);
-            local_member++;
-            pthread_rwlock_unlock(&rwlock);
+    int i = 0;
+    while(count<thread_m){
+                int random_value = rand() % 65535;
+        int random_ops =  rand() % 3;
+        if(random_ops == 0 && member_is_finished == 0){
+            
+            if(count_m < thread_m_member){
+                pthread_rwlock_rdlock( &rwlock );
+                Member(random_value,head);
+                pthread_rwlock_unlock( &rwlock ); 
+                count_m++;
+            }
+            else{
+                member_is_finished = 1;
+            }    
+            
         }
-        else if (local_insert < m_insert)
-        {
-            /* Write lock */
-            pthread_rwlock_wrlock(&rwlock);
-            Insert(random_value, &head);
-            local_insert++;
-            pthread_rwlock_unlock(&rwlock);
+        if(random_ops == 1 && insert_is_finished == 0){
+            
+            if(count_i < thread_m_insert){
+                pthread_rwlock_wrlock( &rwlock );
+                Insert(random_value,&head);
+                pthread_rwlock_unlock( &rwlock ); 
+                count_i++;
+            }
+            else{
+                insert_is_finished = 1;
+            }    
+            
         }
-        else
-        {
-            /* Write lock */
-            pthread_rwlock_wrlock(&rwlock);
-            Delete(random_value, &head);
-            local_delete++;
-            pthread_rwlock_unlock(&rwlock);
+        if(random_ops == 2 && delete_is_finished == 0){
+            
+            if(count_d < thread_m_delete){
+                pthread_rwlock_wrlock( &rwlock );
+                Delete(random_value,&head);
+                pthread_rwlock_unlock( &rwlock ); 
+                count_d++;
+            }
+            else{
+                delete_is_finished = 1;
+            }    
+            
         }
-        
-        pthread_mutex_lock(&mutex);
-        count_m += local_member;
-        count_i += local_insert;
-        count_d += local_delete;
         count = count_m + count_i + count_d;
-        pthread_mutex_unlock(&mutex);
+        i++;
+        
     }
-    return NULL;
+	return NULL;
 }
 
 int main(int argc, char* argv[]){
-
     long thread;
     clock_t start_time, end_time;
     double diff_time;
@@ -177,29 +214,23 @@ int main(int argc, char* argv[]){
 
     thread_handles = malloc(thread_count * sizeof(pthread_t));
     pthread_rwlock_init(&rwlock, NULL);
-    pthread_mutex_init(&mutex, NULL);
 
     start_time = clock();
-
-
+    
     for (thread = 0; thread < thread_count; thread++)
     {
-        pthread_create(&thread_handles[thread], NULL, Thread, (void *)thread);
+        pthread_create(&thread_handles[thread], NULL, Thread, (void*) thread);
     }
     for (thread = 0; thread < thread_count; thread++)
     {
         pthread_join(thread_handles[thread], NULL);
     }
-  
 
     end_time = clock();
-
     pthread_rwlock_destroy(&rwlock);
-    pthread_mutex_destroy(&mutex);
     diff_time = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
 
-    printf("%f", diff_time);
+    printf("%f \n", diff_time);
     free(thread_handles);
-
     return 0;
 }
