@@ -5,11 +5,15 @@
 #include <time.h>
 #include <sys/time.h>
 
+//Linked List Node
+
 struct Node
 {
     int data;
     struct Node *next;
 };
+
+//Global variables
 
 struct Node *head = NULL;
 int n;
@@ -19,6 +23,8 @@ pthread_rwlock_t rwlock;
 pthread_mutex_t mutex1;
 int m_member = 0, m_insert = 0, m_delete = 0;
 int thread_count = 0;
+
+//Member function
 
 int Member(int value, struct Node *head)
 {
@@ -37,6 +43,8 @@ int Member(int value, struct Node *head)
         return 1;
     }
 }
+
+//Insert function
 
 int Insert(int value, struct Node **head)
 {
@@ -70,6 +78,8 @@ int Insert(int value, struct Node **head)
     }
 }
 
+//Delete function
+
 int Delete(int value, struct Node **head)
 {
     struct Node *curr = *head;
@@ -100,14 +110,21 @@ int Delete(int value, struct Node **head)
     }
 }
 
+//Thread function
+
 void *Thread(void *rank)
 {
     int id = (long) rank;
+
+    //Local thread variables
 
     int thread_m_member = 0;
     int thread_m_insert = 0;
     int thread_m_delete = 0;
     int thread_m = 0;
+
+    //Calculate local operations
+
     if (m_member % thread_count == 0 || m_member % thread_count <= id) {
         thread_m_member = m_member / thread_count;
     }
@@ -140,7 +157,9 @@ void *Thread(void *rank)
 
     int i = 0;
     while(count<thread_m){
+        
         int random_value = rand() % 65535;
+        //to select operation randomly
         int random_ops =  rand() % 3;
         if(random_ops == 0 && member_is_finished == 0){
             
@@ -187,6 +206,8 @@ void *Thread(void *rank)
     }
 	return NULL;
 }
+
+//Time differnce function
 
 double GetTimeDiff(struct timeval time_begin, struct timeval time_end) {
     return (double) (time_end.tv_usec - time_begin.tv_usec) / 1000000 + (double) (time_end.tv_sec - time_begin.tv_sec);

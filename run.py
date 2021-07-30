@@ -1,9 +1,9 @@
 """
 handler code for the program.
 Following parameters are used in the test cases,which
-Case 1 - n = 1,000 and m = 10,000, mMember = 0.99, mIndert = 0.005, mDelete = 0.005
-Case 2 - n = 1,000 and m = 10,000, mMember = 0.90, mIndert = 0.05, mDelete = 0.05
-Case 3 - n = 1,000 and m = 10,000, mMember = 0.50, mIndert = 0.25, mDelete = 0.25
+Case 1 - n = 1,000 and m = 10,000, mMember = 0.99, mInsert = 0.005, mDelete = 0.005
+Case 2 - n = 1,000 and m = 10,000, mMember = 0.90, mInsert = 0.05, mDelete = 0.05
+Case 3 - n = 1,000 and m = 10,000, mMember = 0.50, mInsert = 0.25, mDelete = 0.25
 
 For more details check the README.md
 """
@@ -11,9 +11,21 @@ For more details check the README.md
 from subprocess import call, Popen, PIPE
 import subprocess
 import statistics
+import sys
+
+try:
+    threads = sys.argv[1]
+    if(threads=="1" or threads=="2" or threads=="4" or threads=="8"):
+        print("")
+    else:
+        print("invalid thread count")
+        exit()
+except:
+    print("please add thread count ->  python3 run.py thread_count or python run.py thread_count")
+    exit()
 
 n_samples = 20
-n_threads = 4
+n_threads = int(threads)
 
 print ("Using {0} threads".format(n_threads))
 

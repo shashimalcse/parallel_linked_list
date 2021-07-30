@@ -5,11 +5,13 @@
 #include <time.h>
 #include <sys/time.h>
 
-
+//Linked List Node
 struct Node {
     int data;
     struct Node* next;
 };
+
+// Global Variables
 
 struct Node* head = NULL;
 int n;
@@ -19,6 +21,8 @@ pthread_mutex_t mutex1;
 int count_m, count_i, count_d;
 float m_member, m_insert, m_delete;
 int thread_count = 0;
+
+//Member function
 
 int Member(int value, struct Node* head){
     struct Node* curr = head;
@@ -33,6 +37,8 @@ int Member(int value, struct Node* head){
         return 1;
     }
 }
+
+//Insert function
 
 int Insert(int value, struct Node** head){
     struct Node* curr = *head;
@@ -62,6 +68,8 @@ int Insert(int value, struct Node** head){
 
 }
 
+//Delete function
+
 int Delete(int value, struct Node** head){
     struct Node* curr = *head;
     struct Node* pred = NULL;
@@ -88,6 +96,8 @@ int Delete(int value, struct Node** head){
 
 }
 
+// Thread function
+
 void *Thread(void* rank){
 
     int count = 0;
@@ -96,6 +106,7 @@ void *Thread(void* rank){
     int delete_is_finished = 0;
     while(count<m){
         int random_value = rand() % 65535;
+        //to select operation randomly
         int random_ops =  rand() % 3;
         if(random_ops == 0 && member_is_finished == 0){
             pthread_mutex_lock( &mutex1 );
@@ -136,6 +147,8 @@ void *Thread(void* rank){
 
 }
 
+//Time differnce function
+
 double GetTimeDiff(struct timeval time_begin, struct timeval time_end) {
     return (double) (time_end.tv_usec - time_begin.tv_usec) / 1000000 + (double) (time_end.tv_sec - time_begin.tv_sec);
 }
@@ -174,20 +187,15 @@ int main(int argc, char* argv[])
 
     gettimeofday(&start_time, NULL);
     
-    for (int i=0; i<100; i++){
-      for (thread = 0; thread < thread_count; thread++)
-      {
-      pthread_create(&thread_handles[thread], NULL, Thread, (void*) thread);
-      }
-      for (thread = 0; thread < thread_count; thread++)
-      {
-      pthread_join(thread_handles[thread], NULL);
-      }
+    for (thread = 0; thread < thread_count; thread++)
+    {
+    pthread_create(&thread_handles[thread], NULL, Thread, (void*) thread);
     }
     for (thread = 0; thread < thread_count; thread++)
     {
     pthread_join(thread_handles[thread], NULL);
     }
+    
     
     gettimeofday(&end_time, NULL);
 

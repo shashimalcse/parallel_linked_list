@@ -6,11 +6,13 @@
 #include <sys/time.h>
 
 
-
+// Linked List Node
 struct Node {
     int data;
     struct Node* next;
 };
+
+//Global variables
 
 struct Node* head = NULL;
 int n;
@@ -18,6 +20,8 @@ int m;
 float member_fraction, insert_fraction, delete_fraction;
 int count, count_m, count_i, count_d;
 float m_member, m_insert, m_delete;
+
+//Member function
 
 int Member(int value, struct Node* head){
     struct Node* curr = head;
@@ -32,6 +36,8 @@ int Member(int value, struct Node* head){
         return 1;
     }
 }
+
+//Inser function
 
 int Insert(int value, struct Node** head){
     struct Node* curr = *head;
@@ -61,6 +67,8 @@ int Insert(int value, struct Node** head){
 
 }
 
+//Delete function
+
 int Delete(int value, struct Node** head){
     struct Node* curr = *head;
     struct Node* pred = NULL;
@@ -86,6 +94,8 @@ int Delete(int value, struct Node** head){
 
 
 }
+
+//Time differnce function
 
 double GetTimeDiff(struct timeval time_begin, struct timeval time_end) {
     return (double) (time_end.tv_usec - time_begin.tv_usec) / 1000000 + (double) (time_end.tv_sec - time_begin.tv_sec);
