@@ -3,6 +3,7 @@
 #include<pthread.h>
 #include <math.h>
 #include <time.h>
+#include <sys/time.h>
 
 
 
@@ -86,12 +87,14 @@ int Delete(int value, struct Node** head){
 
 }
 
-
+double GetTimeDiff(struct timeval time_begin, struct timeval time_end) {
+    return (double) (time_end.tv_usec - time_begin.tv_usec) / 1000000 + (double) (time_end.tv_sec - time_begin.tv_sec);
+}
 
 int main(int argc, char* argv[])
 {
 
-    clock_t start_time, end_time;
+    struct timeval start_time, end_time;
     double diff_time;
 
     n = (int) strtol(argv[1],NULL,10);
@@ -105,15 +108,13 @@ int main(int argc, char* argv[])
     m_insert = m * insert_fraction;
     m_delete = m * delete_fraction;
 
-    // printf("%f %f %f \n", m_member, m_insert, m_delete);
-
     int i = 0;
     while (i < n) {
         if (Insert(rand() % 65535, &head) == 1)
             i++;
     } 
 
-    start_time = clock();
+    gettimeofday(&start_time, NULL);
     
     while(count<m){
         int random_value = rand() % 65535;
@@ -131,12 +132,8 @@ int main(int argc, char* argv[])
         }
         count =  count_m+count_i+count_d;
     }
-
-    end_time =  clock();
-
-    diff_time = ((double) (end_time-start_time))/ CLOCKS_PER_SEC;
-
-    printf("%f",diff_time);
-
+    
+    gettimeofday(&end_time, NULL);
+    printf("%f", GetTimeDiff(start_time, end_time));
     return 0;
 }

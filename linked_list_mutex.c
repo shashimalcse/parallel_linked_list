@@ -3,7 +3,7 @@
 #include<pthread.h>
 #include <math.h>
 #include <time.h>
-
+#include <sys/time.h>
 
 
 struct Node {
@@ -91,25 +91,43 @@ int Delete(int value, struct Node** head){
 void *Thread(void* rank){
 
     int count = 0;
+    int member_is_finished = 0;
+    int insert_is_finished = 0;
+    int delete_is_finished = 0;
     while(count<m){
         int random_value = rand() % 65535;
-        if(count_m < m_member){
-            pthread_mutex_lock( &mutex1 );    
-            Member(random_value,head);
-            count_m++;
+        int random_ops =  rand() % 3;
+        if(random_ops == 0 && member_is_finished == 0){
+            pthread_mutex_lock( &mutex1 );
+            if(count_m < m_member){
+                Member(random_value,head);
+                count_m++;
+            }
+            else{
+                member_is_finished = 1;
+            }    
             pthread_mutex_unlock( &mutex1 ); 
-
         }
-        else if(count_i < m_insert){
-            pthread_mutex_lock( &mutex1 ); 
-            Insert(random_value,&head);
-            count_i++;
+        if(random_ops == 1 && insert_is_finished == 0){
+            pthread_mutex_lock( &mutex1 );
+            if(count_i < m_insert){
+                Insert(random_value,&head);
+                count_i++;
+            }
+            else{
+                insert_is_finished = 1;
+            }    
             pthread_mutex_unlock( &mutex1 ); 
         }
-        else{
-            pthread_mutex_lock( &mutex1 ); 
-            Delete(random_value,&head);
-            count_d++;
+        if(random_ops == 2 && delete_is_finished == 0){
+            pthread_mutex_lock( &mutex1 );
+            if(count_d < m_delete){
+                Delete(random_value,&head);
+                count_d++;
+            }
+            else{
+                delete_is_finished = 1;
+            }    
             pthread_mutex_unlock( &mutex1 ); 
         }
         count = count_m+count_i+count_d;
@@ -118,13 +136,17 @@ void *Thread(void* rank){
 
 }
 
+double GetTimeDiff(struct timeval time_begin, struct timeval time_end) {
+    return (double) (time_end.tv_usec - time_begin.tv_usec) / 1000000 + (double) (time_end.tv_sec - time_begin.tv_sec);
+}
+
 
 int main(int argc, char* argv[])
 {
     int lower = 1;
     int upper = pow(2,16);
     long thread;
-    clock_t start_time, end_time;
+    struct timeval start_time, end_time;
     double diff_time;
     pthread_t* thread_handles;
 
@@ -150,7 +172,7 @@ int main(int argc, char* argv[])
     thread_handles =  malloc(thread_count*sizeof(pthread_t));
     pthread_mutex_init(&mutex1, NULL);
 
-    start_time = clock();
+    gettimeofday(&start_time, NULL);
     
     for (int i=0; i<100; i++){
       for (thread = 0; thread < thread_count; thread++)
@@ -162,13 +184,15 @@ int main(int argc, char* argv[])
       pthread_join(thread_handles[thread], NULL);
       }
     }
-    end_time =  clock();
+    for (thread = 0; thread < thread_count; thread++)
+    {
+    pthread_join(thread_handles[thread], NULL);
+    }
+    
+    gettimeofday(&end_time, NULL);
 
     pthread_mutex_destroy(&mutex1);
-    diff_time = ((double) (end_time-start_time))/ CLOCKS_PER_SEC;
-    diff_time = diff_time / 100;
-
-    printf("%f",diff_time);
+    printf("%f", GetTimeDiff(start_time, end_time));
     free(thread_handles);
 
 
