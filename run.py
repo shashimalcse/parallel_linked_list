@@ -3,7 +3,7 @@ import subprocess
 import statistics
 
 n_samples = 20
-n_threads = 1
+n_threads = 2
 
 print ("Using {0} threads".format(n_threads))
 
